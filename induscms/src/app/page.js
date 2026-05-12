@@ -11,41 +11,34 @@ import Image from '@tiptap/extension-image'
 
 
 export default function Home() {
+  
   useEffect(() => {
-    document.title = "IndUS CMS - Event Management";
+    async function fetchEvents() {
+    try {
+      const res = await fetch("/api/events");
+      const data = await res.json();
+      const updated = data.map(item => ({
+        ...item,
+        status: "Published",
+      }));
+      setEvents(updated); 
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  fetchEvents();
   }, []);
-  const initialEvents = [
-    {
-      id: 1,
-      title: "Summer Gala",
-      date: "2026-06-20",
-      location: "Mumbai Club",
-      status: "Upcoming",
-    },
-    {
-      id: 2,
-      title: "Product Launch",
-      date: "2026-07-01",
-      location: "Online Webinar",
-      status: "Planned",
-    },
-    {
-      id: 3,
-      title: "Team Retreat",
-      date: "2026-05-28",
-      location: "Goa Resort",
-      status: "Published",
-    },
-  ];
 
   const blankForm = {
     title: "",
     date: "",
+    content:"",
     location: "",
     status: "Upcoming",
   };
 
-  const [events, setEvents] = useState(initialEvents);
+  const [events, setEvents] = useState([]);
   const [form, setForm] = useState(blankForm);
   const [editingId, setEditingId] = useState(null);
 
@@ -88,6 +81,7 @@ export default function Home() {
       title: eventData.title,
       date: eventData.date,
       location: eventData.location,
+      content: eventData.content,
       status: eventData.status,
     });
   };
@@ -143,15 +137,11 @@ export default function Home() {
 
             <label className={styles.formField}>
               <span>Content</span>
-              <EventEditor />
-              {/* <input
-                className = {styles.input}
-
-                name="location"
-                value={form.location}
-                onChange={handleChange}
-                placeholder="Location"
-              /> */}
+              <EventEditor value={form.content}
+              onChange={(html) =>
+                setForm((prev) => ({ ...prev, content: html }))
+              }/>
+              
             </label>
 
             <label className={styles.formField}>
@@ -233,7 +223,7 @@ export default function Home() {
   );
 }
 
-function EventEditor() {
+function EventEditor({value,onChange}) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -246,11 +236,23 @@ function EventEditor() {
         openOnClick: false,
       }),
       
+      
     ],
-    content: '<p>Start writing your event...</p>',
+    content: value|| "<p>Start writing...</p>",
     immediatelyRender: false,
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML()) 
+    },
   })
+  useEffect(() => {
+    if (!editor) return;
 
+    const current = editor.getHTML();
+
+    if (value !== current) {
+      editor.commands.setContent(value || "", false);
+    }
+  }, [value, editor]);
   if (!editor) return null
 
   return (

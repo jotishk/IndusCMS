@@ -55,13 +55,14 @@
 }
 .input {
   color: #4b5563  ;
-  
+  outline: none;
 }
 .input::placeholder {
   color: #4b5563;
   opacity: 1; /* prevents faded placeholder in some browsers */
 }
 .formField {
+  
 	display: flex;
 	flex-direction: column;
 	gap: 8px;

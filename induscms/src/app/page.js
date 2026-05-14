@@ -52,27 +52,56 @@ export default function Home() {
     setForm((current) => ({ ...current, [name]: value }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!form.title.trim() || !form.date.trim()) {
+
+    if (!form.title.trim()) {
       return;
     }
 
-    if (editingId) {
-      setEvents((current) =>
-        current.map((item) =>
-          item.id === editingId ? { ...item, ...form } : item
-        )
-      );
-    } else {
-      const newEvent = {
-        id: Date.now(),
-        ...form,
-      };
-      setEvents((current) => [newEvent, ...current]);
-    }
+    try {
+      if (editingId) {
+        await fetch(`/api/events/${editingId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
+        });
 
-    resetForm();
+        setEvents((current) =>
+          current.map((item) =>
+            item.id === editingId
+              ? { ...item, ...form }
+              : item
+          )
+        );
+      }else {
+        const res = await fetch("/api/events", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
+        });
+
+        const data = await res.json();
+
+        const newEvent = {
+          id: data.id,
+          ...form,
+        };
+
+        setEvents((current) => [
+          newEvent,
+          ...current,
+        ]);
+      }
+
+      resetForm();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleEdit = (eventData) => {
@@ -86,12 +115,29 @@ export default function Home() {
     });
   };
 
-  const handleDelete = (id) => {
-    setEvents((current) => current.filter((eventItem) => eventItem.id !== id));
+const handleDelete = async (id) => {
+  try {
+    await fetch("/api/events", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id }),
+    });
+
+    setEvents((current) =>
+      current.filter(
+        (eventItem) => eventItem.id !== id
+      )
+    );
+
     if (editingId === id) {
       resetForm();
     }
-  };
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   return (
     <div className={styles.page}>
@@ -122,6 +168,17 @@ export default function Home() {
                 placeholder="Event title"
               />
             </label>
+            <label className={styles.formField}>
+              <span>Thumbnail</span>
+              <input
+                className = {styles.input}
+                type="file"
+                name="thumbnail"
+                value={form.thumbnail}
+                onChange={handleChange}
+                placeholder="Event title"
+              />
+            </label>
 
             <label className={styles.formField}>
               <span>Date</span>
@@ -131,6 +188,16 @@ export default function Home() {
                 type="date"
                 name="date"
                 value={form.date}
+                onChange={handleChange}
+              />
+            </label>
+            <label className={styles.formField}>
+              <span>Time</span>
+              <input
+                className = {styles.input}
+                type="time"
+                name="time"
+                value={form.time}
                 onChange={handleChange}
               />
             </label>
@@ -194,7 +261,7 @@ export default function Home() {
                 {events.map((eventItem) => (
                   <tr key={eventItem.id}>
                     <td>{eventItem.title}</td>
-                    <td>{eventItem.date}</td>
+                    <td>{eventItem.id}</td>
                     <td>{eventItem.status}</td>
                     <td className={styles.actionsCell}>
                       <button
@@ -261,26 +328,26 @@ function EventEditor({value,onChange}) {
       {/* Toolbar */}
       <div style={{ marginBottom: '10px', display: 'flex' , flexWrap: 'wrap' }}>
         
-        <button className={styles.toolbarButton} onClick={() => editor.chain().focus().toggleBold().run()}>
+        <button type="button" className={styles.toolbarButton} onClick={() => editor.chain().focus().toggleBold().run()}>
           Bold
         </button>
 
-        <button className={styles.toolbarButton} onClick={() => editor.chain().focus().toggleItalic().run()}>
+        <button type="button" className={styles.toolbarButton} onClick={() => editor.chain().focus().toggleItalic().run()}>
           Italic
         </button>
 
-        <button className={styles.toolbarButton} onClick={() => editor.chain().focus().toggleUnderline().run()}>
+        <button type="button" className={styles.toolbarButton} onClick={() => editor.chain().focus().toggleUnderline().run()}>
           Underline
         </button>
 
-        <button className={styles.toolbarButton} onClick={() => editor.chain().focus().toggleBulletList().run()}>
+        <button type="button" className={styles.toolbarButton} onClick={() => editor.chain().focus().toggleBulletList().run()}>
           Bullet List
         </button>
 
-        <button className={styles.toolbarButton} onClick={() => editor.chain().focus().toggleOrderedList().run()}>
+        <button type="button" className={styles.toolbarButton} onClick={() => editor.chain().focus().toggleOrderedList().run()}>
           Numbered List
         </button>
-        <button className={styles.toolbarButton} onClick={() => editor.chain().focus().clearContent(true).run()}>
+        <button type="button" className={styles.toolbarButton} onClick={() => editor.chain().focus().clearContent(true).run()}>
           Clear
         </button>
       </div>

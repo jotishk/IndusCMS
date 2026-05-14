@@ -21,18 +21,19 @@ export async function POST(req) {
   try {
     const body = await req.json()
 
-    await pool.query(
-      `INSERT INTO events (title, date, status, content)
-       VALUES (?, ?, ?, ?)`,
+    const [result] = await pool.query(
+      `INSERT INTO events (title, content)
+       VALUES (?, ?)`,
       [
         body.title,
-        body.date,
-        body.status,
         body.content,
       ]
     )
 
-    return Response.json({ success: true })
+    return Response.json({ 
+        id: result.insertId,
+        success: true 
+    })
   } catch (err) {
     return Response.json(
       { error: err.message },
@@ -55,7 +56,7 @@ export async function PUT(req) {
         body.date,
         body.status,
         body.content,
-        body.id, // 👈 IMPORTANT
+        body.id, 
       ]
     )
 

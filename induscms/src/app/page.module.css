@@ -109,6 +109,7 @@
   background-color: black;
   padding: 4px 4px 4px 4px;
   cursor: pointer;
+  color: white;
   
 }
 .editor :global(.ProseMirror) {

@@ -1,6 +1,6 @@
 import pool from "@/lib/db"
 
-// 📥 GET ALL EVENTS
+
 export async function GET() {
   try {
     const [rows] = await pool.query(
@@ -16,16 +16,17 @@ export async function GET() {
   }
 }
 
-// ➕ CREATE EVENT
+
 export async function POST(req) {
   try {
     const body = await req.json()
 
     const [result] = await pool.query(
-      `INSERT INTO events (title, content)
-       VALUES (?, ?)`,
-      [
+      `INSERT INTO events (title, date_posted,content)
+       VALUES (?, ?, ?)`,
+      [ 
         body.title,
+        body.date,
         body.content,
       ]
     )
@@ -69,7 +70,7 @@ export async function PUT(req) {
   }
 }
 
-// 🗑️ DELETE EVENT
+
 export async function DELETE(req) {
   try {
     const body = await req.json()

@@ -17,8 +17,10 @@ export default function Home() {
     try {
       const res = await fetch("/api/events");
       const data = await res.json();
+      console.log(data)
       const updated = data.map(item => ({
         ...item,
+        date: item.date_posted,
         status: "Published",
       }));
       setEvents(updated); 
@@ -176,7 +178,7 @@ const handleDelete = async (id) => {
                 name="thumbnail"
                 value={form.thumbnail}
                 onChange={handleChange}
-                placeholder="Event title"
+
               />
             </label>
 
@@ -218,6 +220,7 @@ const handleDelete = async (id) => {
                 <option>Published</option>
                 <option>Past Event</option>
               </select>
+
             </label>
           </div>
 
@@ -261,10 +264,12 @@ const handleDelete = async (id) => {
                 {events.map((eventItem) => (
                   <tr key={eventItem.id}>
                     <td>{eventItem.title}</td>
-                    <td>{eventItem.id}</td>
+                    <td>{new Intl.DateTimeFormat("en-US", {
+  timeZone: "UTC",
+}).format(new Date(eventItem.date))}</td>
                     <td>{eventItem.status}</td>
                     <td className={styles.actionsCell}>
-                      <button
+                      <button 
                         type="button"
                         className={styles.editButton}
                         onClick={() => handleEdit(eventItem)}

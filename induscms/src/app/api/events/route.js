@@ -22,11 +22,12 @@ export async function POST(req) {
     const body = await req.json()
 
     const [result] = await pool.query(
-      `INSERT INTO events (title, date_posted,content)
-       VALUES (?, ?, ?)`,
+      `INSERT INTO events (title, date_posted,event_time,content)
+       VALUES (?, ?, ?, ?)`,
       [ 
         body.title,
         body.date,
+        body.time,
         body.content,
       ]
     )
@@ -43,7 +44,6 @@ export async function POST(req) {
   }
 }
 
-// ✏️ UPDATE EVENT
 export async function PUT(req) {
   try {
     const body = await req.json()

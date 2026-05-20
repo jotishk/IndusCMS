@@ -1,41 +1,41 @@
 "use client";
 
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import styles from "./page.module.css";
 
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
-import Link from '@tiptap/extension-link'
-import Image from '@tiptap/extension-image'
-
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import Link from "@tiptap/extension-link";
+import Image from "@tiptap/extension-image";
 
 export default function Home() {
-  
   useEffect(() => {
     async function fetchEvents() {
-    try {
-      const res = await fetch("/api/events");
-      const data = await res.json();
-      console.log(data)
-      const updated = data.map(item => ({
-        ...item,
-        date: item.date_posted,
-        status: "Published",
-      }));
-      setEvents(updated); 
-    } catch (err) {
-      console.error(err);
+      try {
+        const res = await fetch("/api/events");
+        const data = await res.json();
+        console.log(data);
+        const updated = data.map((item) => ({
+          ...item,
+          date: item.date_posted,
+          status: "Published",
+        }));
+        setEvents(updated);
+      } catch (err) {
+        console.error(err);
+      }
     }
-  }
 
-  fetchEvents();
+    fetchEvents();
   }, []);
 
   const blankForm = {
     title: "",
+    time: "",
     date: "",
-    content:"",
+    thumbnail: "",
+    content: "",
     location: "",
     status: "Upcoming",
   };
@@ -73,12 +73,10 @@ export default function Home() {
 
         setEvents((current) =>
           current.map((item) =>
-            item.id === editingId
-              ? { ...item, ...form }
-              : item
-          )
+            item.id === editingId ? { ...item, ...form } : item,
+          ),
         );
-      }else {
+      } else {
         const res = await fetch("/api/events", {
           method: "POST",
           headers: {
@@ -94,10 +92,7 @@ export default function Home() {
           ...form,
         };
 
-        setEvents((current) => [
-          newEvent,
-          ...current,
-        ]);
+        setEvents((current) => [newEvent, ...current]);
       }
 
       resetForm();
@@ -111,35 +106,52 @@ export default function Home() {
     setForm({
       title: eventData.title,
       date: eventData.date,
+      time: eventData.time,
+      thumbnail: eventData.thumbnail,
       location: eventData.location,
       content: eventData.content,
       status: eventData.status,
     });
   };
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
 
-const handleDelete = async (id) => {
-  try {
-    await fetch("/api/events", {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id }),
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
     });
 
-    setEvents((current) =>
-      current.filter(
-        (eventItem) => eventItem.id !== id
-      )
-    );
+    const data = await res.json();
+    console.log(data.url + "file upload response");
+    setForm((prev) => ({
+      ...prev,
+      thumbnail: data.url, 
+    }));
+  };
+  const handleDelete = async (id) => {
+    try {
+      await fetch("/api/events", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
 
-    if (editingId === id) {
-      resetForm();
+      setEvents((current) =>
+        current.filter((eventItem) => eventItem.id !== id),
+      );
+
+      if (editingId === id) {
+        resetForm();
+      }
+    } catch (err) {
+      console.error(err);
     }
-  } catch (err) {
-    console.error(err);
-  }
-};
+  };
 
   return (
     <div className={styles.page}>
@@ -163,7 +175,7 @@ const handleDelete = async (id) => {
             <label className={styles.formField}>
               <span>Title</span>
               <input
-                className = {styles.input}
+                className={styles.input}
                 name="title"
                 value={form.title}
                 onChange={handleChange}
@@ -173,20 +185,18 @@ const handleDelete = async (id) => {
             <label className={styles.formField}>
               <span>Thumbnail</span>
               <input
-                className = {styles.input}
+                className={styles.input}
                 type="file"
                 name="thumbnail"
-                value={form.thumbnail}
-                onChange={handleChange}
-
+                accept="image/*"
+                onChange={handleFileChange}
               />
             </label>
 
             <label className={styles.formField}>
               <span>Date</span>
               <input
-                className = {styles.input}
-
+                className={styles.input}
                 type="date"
                 name="date"
                 value={form.date}
@@ -196,7 +206,7 @@ const handleDelete = async (id) => {
             <label className={styles.formField}>
               <span>Time</span>
               <input
-                className = {styles.input}
+                className={styles.input}
                 type="time"
                 name="time"
                 value={form.time}
@@ -206,21 +216,26 @@ const handleDelete = async (id) => {
 
             <label className={styles.formField}>
               <span>Content</span>
-              <EventEditor value={form.content}
-              onChange={(html) =>
-                setForm((prev) => ({ ...prev, content: html }))
-              }/>
-              
+              <EventEditor
+                value={form.content}
+                onChange={(html) =>
+                  setForm((prev) => ({ ...prev, content: html }))
+                }
+              />
             </label>
 
             <label className={styles.formField}>
               <span>Status</span>
-              <select className={styles.input} name="status" value={form.status} onChange={handleChange}>
+              <select
+                className={styles.input}
+                name="status"
+                value={form.status}
+                onChange={handleChange}
+              >
                 <option>Unpublished</option>
                 <option>Published</option>
                 <option>Past Event</option>
               </select>
-
             </label>
           </div>
 
@@ -249,7 +264,9 @@ const handleDelete = async (id) => {
 
         <div className={styles.tableWrapper}>
           {events.length === 0 ? (
-            <p className={styles.emptyState}>No events available. Add an event to get started.</p>
+            <p className={styles.emptyState}>
+              No events available. Add an event to get started.
+            </p>
           ) : (
             <table className={styles.table}>
               <thead>
@@ -264,12 +281,14 @@ const handleDelete = async (id) => {
                 {events.map((eventItem) => (
                   <tr key={eventItem.id}>
                     <td>{eventItem.title}</td>
-                    <td>{new Intl.DateTimeFormat("en-US", {
-  timeZone: "UTC",
-}).format(new Date(eventItem.date))}</td>
+                    <td>
+                      {new Intl.DateTimeFormat("en-US", {
+                        timeZone: "UTC",
+                      }).format(new Date(eventItem.date))}
+                    </td>
                     <td>{eventItem.status}</td>
                     <td className={styles.actionsCell}>
-                      <button 
+                      <button
                         type="button"
                         className={styles.editButton}
                         onClick={() => handleEdit(eventItem)}
@@ -295,7 +314,7 @@ const handleDelete = async (id) => {
   );
 }
 
-function EventEditor({value,onChange}) {
+function EventEditor({ value, onChange }) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -307,15 +326,13 @@ function EventEditor({value,onChange}) {
       Link.configure({
         openOnClick: false,
       }),
-      
-      
     ],
-    content: value|| "<p>Start writing...</p>",
+    content: value || "<p>Start writing...</p>",
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML()) 
+      onChange(editor.getHTML());
     },
-  })
+  });
   useEffect(() => {
     if (!editor) return;
 
@@ -325,41 +342,61 @@ function EventEditor({value,onChange}) {
       editor.commands.setContent(value || "", false);
     }
   }, [value, editor]);
-  if (!editor) return null
+  if (!editor) return null;
 
   return (
-    <div className = {styles.eventeditor}>
-      
+    <div className={styles.eventeditor}>
       {/* Toolbar */}
-      <div style={{ marginBottom: '10px', display: 'flex' , flexWrap: 'wrap' }}>
-        
-        <button type="button" className={styles.toolbarButton} onClick={() => editor.chain().focus().toggleBold().run()}>
+      <div style={{ marginBottom: "10px", display: "flex", flexWrap: "wrap" }}>
+        <button
+          type="button"
+          className={styles.toolbarButton}
+          onClick={() => editor.chain().focus().toggleBold().run()}
+        >
           Bold
         </button>
 
-        <button type="button" className={styles.toolbarButton} onClick={() => editor.chain().focus().toggleItalic().run()}>
+        <button
+          type="button"
+          className={styles.toolbarButton}
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+        >
           Italic
         </button>
 
-        <button type="button" className={styles.toolbarButton} onClick={() => editor.chain().focus().toggleUnderline().run()}>
+        <button
+          type="button"
+          className={styles.toolbarButton}
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+        >
           Underline
         </button>
 
-        <button type="button" className={styles.toolbarButton} onClick={() => editor.chain().focus().toggleBulletList().run()}>
+        <button
+          type="button"
+          className={styles.toolbarButton}
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+        >
           Bullet List
         </button>
 
-        <button type="button" className={styles.toolbarButton} onClick={() => editor.chain().focus().toggleOrderedList().run()}>
+        <button
+          type="button"
+          className={styles.toolbarButton}
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        >
           Numbered List
         </button>
-        <button type="button" className={styles.toolbarButton} onClick={() => editor.chain().focus().clearContent(true).run()}>
+        <button
+          type="button"
+          className={styles.toolbarButton}
+          onClick={() => editor.chain().focus().clearContent(true).run()}
+        >
           Clear
         </button>
       </div>
 
-      
-      <EditorContent  className={styles.editor} editor={editor} />
-      
+      <EditorContent className={styles.editor} editor={editor} />
     </div>
-  )
+  );
 }

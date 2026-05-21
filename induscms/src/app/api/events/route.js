@@ -1,5 +1,5 @@
 import pool from "@/lib/db"
-
+import path from "path";
 
 export async function GET() {
   try {
@@ -16,22 +16,34 @@ export async function GET() {
   }
 }
 
+function slugifyTitle(title) {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s]/g, "")   
+    .replace(/\s+/g, "-")         
+}
 
 export async function POST(req) {
   try {
     const body = await req.json()
-
+    
     const [result] = await pool.query(
-      `INSERT INTO events (title, date_posted,event_time,content)
-       VALUES (?, ?, ?, ?)`,
+      `INSERT INTO events (title, image, date_posted, event_time, content, url, browser_title, meta_keywords, meta_description)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [ 
         body.title,
+        body.thumbnail,
         body.date,
         body.time,
         body.content,
+        slugifyTitle(body.title),
+        body.title,
+        body.title,
+        body.title
       ]
     )
-
+    
     return Response.json({ 
         id: result.insertId,
         success: true 

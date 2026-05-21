@@ -1,5 +1,6 @@
 import ftp from "basic-ftp";
 import { Readable } from "stream";
+import path from "path";
 
 export async function POST(req) {
   const client = new ftp.Client();
@@ -12,14 +13,12 @@ export async function POST(req) {
       return Response.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    // convert file to buffer
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const ext = path.extname(file.name);
+    const fileName = `${Date.now()}${ext}`;
 
-    // unique filename
-    const fileName = Date.now() + "-" + file.name.replaceAll(" ", "_");
-
-    // connect to FTP
     await client.access({
       host: process.env.FTP_HOST,
       user: process.env.FTP_USER,
@@ -30,15 +29,16 @@ export async function POST(req) {
 
     client.ftp.verbose = true;
 
-    // go to uploads folder
+ 
     await client.ensureDir("public_html/uploads");
 
-    await client.uploadFrom(buffer, fileName);
-    const list = await client.list();
-    console.log("Files in current directory:", list);
+    const stream = Readable.from(buffer);
+
+    await client.uploadFrom(stream, fileName);
+
     client.close();
 
-    const url = `https://indusfoxvalley.org/uploads/${fileName}`;
+    const url = `/uploads/${fileName}`;
 
     return Response.json({
       success: true,
@@ -46,9 +46,6 @@ export async function POST(req) {
     });
   } catch (err) {
     client.close();
-
-    console.error("FULL FTP ERROR:", err);
-    console.error("STACK:", err?.stack);
 
     return Response.json(
       {

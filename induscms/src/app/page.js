@@ -15,7 +15,7 @@ export default function Home() {
       try {
         const res = await fetch("/api/events");
         const data = await res.json();
-        console.log(data);
+        
         const updated = data.map((item) => ({
           ...item,
           date: item.date_posted,
@@ -37,6 +37,7 @@ export default function Home() {
     thumbnail: "",
     content: "",
     location: "",
+    
     status: "Upcoming",
   };
 
@@ -88,8 +89,8 @@ export default function Home() {
         const data = await res.json();
 
         const newEvent = {
-          id: data.id,
           ...form,
+          id: data.id,
         };
 
         setEvents((current) => [newEvent, ...current]);
@@ -125,7 +126,7 @@ export default function Home() {
     });
 
     const data = await res.json();
-    console.log(data.url + "file upload response");
+    
     setForm((prev) => ({
       ...prev,
       thumbnail: data.url, 

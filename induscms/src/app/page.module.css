@@ -1,4 +1,4 @@
-/* Page wrapper */
+
 .page {
 	max-width: 1100px;
 	margin: 0 auto;
@@ -59,7 +59,7 @@
 }
 .input::placeholder {
   color: #4b5563;
-  opacity: 1; /* prevents faded placeholder in some browsers */
+  opacity: 1; 
 }
 .formField {
   
@@ -107,10 +107,13 @@
 }
 .toolbarButton {
   background-color: black;
-  padding: 4px 4px 4px 4px;
+  padding: 5px 5px 5px 5px;
   cursor: pointer;
   color: white;
-  
+  border: none;
+  width: 100px;
+  height: 30px;
+  font-size: 12px;
 }
 .editor :global(.ProseMirror) {
 	min-height: 200px;
@@ -120,7 +123,8 @@
 
 	line-height: 1.6;
   overflow-y: auto;
-  
+  overflow-x:auto;
+  max-width: 660px;
 }
 .formField input:focus,
 .formField select:focus {

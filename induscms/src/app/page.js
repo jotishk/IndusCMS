@@ -15,7 +15,7 @@ export default function Home() {
       try {
         const res = await fetch("/api/events");
         const data = await res.json();
-        
+
         const updated = data.map((item) => ({
           ...item,
           date: item.date_posted,
@@ -37,7 +37,7 @@ export default function Home() {
     thumbnail: "",
     content: "",
     location: "",
-    
+
     status: "Upcoming",
   };
 
@@ -126,10 +126,10 @@ export default function Home() {
     });
 
     const data = await res.json();
-    
+
     setForm((prev) => ({
       ...prev,
-      thumbnail: data.url, 
+      thumbnail: data.url,
     }));
   };
   const handleDelete = async (id) => {
@@ -327,6 +327,7 @@ function EventEditor({ value, onChange }) {
       Link.configure({
         openOnClick: false,
       }),
+      Image,
     ],
     content: value || "<p>Start writing...</p>",
     immediatelyRender: false,
@@ -347,8 +348,8 @@ function EventEditor({ value, onChange }) {
 
   return (
     <div className={styles.eventeditor}>
-      {/* Toolbar */}
-      <div style={{ marginBottom: "10px", display: "flex", flexWrap: "wrap" }}>
+     
+      <div style={{ gap:"2px", marginBottom: "10px", display: "flex", flexWrap: "wrap" }}>
         <button
           type="button"
           className={styles.toolbarButton}
@@ -391,12 +392,50 @@ function EventEditor({ value, onChange }) {
         <button
           type="button"
           className={styles.toolbarButton}
+          onClick={() => document.getElementById("editorImageUpload").click()}
+        >
+          Insert Image
+        </button>
+        <button
+          type="button"
+          className={styles.toolbarButton}
           onClick={() => editor.chain().focus().clearContent(true).run()}
         >
           Clear
         </button>
       </div>
 
+      <input
+        id="editorImageUpload"
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          if (!file || !editor) return;
+
+          const formData = new FormData();
+          formData.append("file", file);
+
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          const data = await res.json();
+
+          editor
+            .chain()
+            .focus()
+            .insertContent({
+              type: "image",
+              attrs: {
+                src: `https://indusfoxvalley.org/${data.url}`,
+              },
+            })
+            .run();
+        }}
+      />
       <EditorContent className={styles.editor} editor={editor} />
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "./page.module.css";
 
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -10,6 +10,7 @@ import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 
 export default function Home() {
+  const fileInputRef = useRef(null);
   useEffect(() => {
     async function fetchEvents() {
       try {
@@ -18,7 +19,7 @@ export default function Home() {
 
         const updated = data.map((item) => ({
           ...item,
-          date: item.date_posted,
+          
           status: "Published",
         }));
         setEvents(updated);
@@ -34,7 +35,7 @@ export default function Home() {
     title: "",
     time: "",
     date: "",
-    thumbnail: "",
+    image: "",
     content: "",
     location: "",
 
@@ -48,6 +49,10 @@ export default function Home() {
   const resetForm = () => {
     setForm(blankForm);
     setEditingId(null);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleChange = (event) => {
@@ -64,12 +69,15 @@ export default function Home() {
 
     try {
       if (editingId) {
-        await fetch(`/api/events/${editingId}`, {
+        await fetch("/api/events", {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(form),
+          body: JSON.stringify({
+            ...form,
+            id: editingId,
+          }),
         });
 
         setEvents((current) =>
@@ -104,11 +112,12 @@ export default function Home() {
 
   const handleEdit = (eventData) => {
     setEditingId(eventData.id);
+    console.log(eventData);
     setForm({
       title: eventData.title,
-      date: eventData.date,
+      date: eventData.date?.split("T")[0],
       time: eventData.time,
-      thumbnail: eventData.thumbnail,
+      image: eventData.image,
       location: eventData.location,
       content: eventData.content,
       status: eventData.status,
@@ -129,7 +138,7 @@ export default function Home() {
 
     setForm((prev) => ({
       ...prev,
-      thumbnail: data.url,
+      image: data.url,
     }));
   };
   const handleDelete = async (id) => {
@@ -161,7 +170,7 @@ export default function Home() {
           <p className={styles.smallHeading}>IndUS Admin Portal</p>
           <h1>Event Content Management</h1>
           <p className={styles.subtitle}>
-            View, add, edit, and delete events from your CMS.
+            View, add, edit, and delete events from the IndUS website.
           </p>
         </div>
       </header>
@@ -169,7 +178,7 @@ export default function Home() {
       <section className={styles.card}>
         <div className={styles.cardHeader}>
           <h2>{editingId ? "Edit Event" : "Add Event"}</h2>
-          <p>Use the form to create new events or update an existing row.</p>
+          <p>Use the form to create new events or update an existing event.</p>
         </div>
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.formGrid}>
@@ -187,8 +196,9 @@ export default function Home() {
               <span>Thumbnail</span>
               <input
                 className={styles.input}
+                ref={fileInputRef}
                 type="file"
-                name="thumbnail"
+                name="image"
                 accept="image/*"
                 onChange={handleFileChange}
               />
@@ -260,7 +270,7 @@ export default function Home() {
       <section className={styles.tableSection}>
         <div className={styles.tableHeader}>
           <h2>Events</h2>
-          <p>Manage your current event list.</p>
+          <p>Manage current IndUS events.</p>
         </div>
 
         <div className={styles.tableWrapper}>
@@ -348,8 +358,14 @@ function EventEditor({ value, onChange }) {
 
   return (
     <div className={styles.eventeditor}>
-     
-      <div style={{ gap:"2px", marginBottom: "10px", display: "flex", flexWrap: "wrap" }}>
+      <div
+        style={{
+          gap: "2px",
+          marginBottom: "10px",
+          display: "flex",
+          flexWrap: "wrap",
+        }}
+      >
         <button
           type="button"
           className={styles.toolbarButton}

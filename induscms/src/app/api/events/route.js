@@ -7,7 +7,18 @@ export async function GET() {
       "SELECT * FROM events ORDER BY id DESC"
     )
     
-    return Response.json(rows)
+    return Response.json(
+  rows.map((item) => ({
+    id: item.id,
+    title: item.title,
+    image: item.image,
+    date: item.date_posted,
+    time: item.event_time,
+    content: item.content,
+    location: item.location,
+    status: item.status,
+  }))
+);
   } catch (err) {
     return Response.json(
       { error: err.message },
@@ -33,7 +44,7 @@ export async function POST(req) {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [ 
         body.title,
-        body.thumbnail,
+        body.image,
         body.date,
         body.time,
         body.content,
@@ -58,27 +69,41 @@ export async function POST(req) {
 
 export async function PUT(req) {
   try {
-    const body = await req.json()
+    const body = await req.json();
 
     await pool.query(
       `UPDATE events
-       SET title=?, date=?, status=?, content=?
-       WHERE id=?`,
+       SET
+         title = ?,
+         image = ?,
+         date_posted = ?,
+         event_time = ?,
+         content = ?,
+         url = ?,
+         browser_title = ?,
+         meta_keywords = ?,
+         meta_description = ?
+       WHERE id = ?`,
       [
         body.title,
+        body.image,
         body.date,
-        body.status,
+        body.time,
         body.content,
-        body.id, 
+        slugifyTitle(body.title),
+        body.title,
+        body.title,
+        body.title,
+        body.id,
       ]
-    )
+    );
 
-    return Response.json({ success: true })
+    return Response.json({ success: true });
   } catch (err) {
     return Response.json(
       { error: err.message },
       { status: 500 }
-    )
+    );
   }
 }
 

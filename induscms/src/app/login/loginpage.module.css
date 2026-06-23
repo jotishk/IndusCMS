@@ -41,9 +41,9 @@
   border-width: 0.5px;
   border-style: solid;
   /* border: 1px solid hsl(0, 0%, 85%); */
-  width: 24rem;
+  width: 30rem;
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.06), 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-  height: 34rem;
+  height: 28rem;
   background-color: var(--bglight);
   padding: 0.3rem 3rem 0 3rem; 
   border-radius: 5px;
@@ -54,6 +54,7 @@
   font-size: 2rem;
   font-weight: 600;
   margin-bottom: 0px;
+  margin-top: 3rem;
 }
 .signupforminput {
   display: block;
@@ -65,7 +66,7 @@
   border: 1px solid hsl(0, 0%, 85%);
   border-radius: 5px;
   padding-left: 1rem;
-  color: var(--txt);
+
   font-family: var(--txtfont);
   font-size: 1rem;
   font-weight: 600;

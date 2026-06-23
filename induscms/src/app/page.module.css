@@ -5,9 +5,122 @@
 	padding: 24px 20px 40px;
 	font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	color: #111827;
+	margin-top: 3rem;
 }
 
+
 .header {
+  position: absolute;
+  display:flex;
+  flex-direction: row;
+  align-items: center;
+  /* background-color: #0057B7; */
+  height: 4rem;
+  width: 100%;
+  /* border-bottom-width: 1px;
+  border-bottom-color: var(--txtlight);
+  border-bottom-style: solid; */
+}
+.headerlogo {
+  /* height:4rem;
+  width: 4rem; */
+  margin-left: 1rem;
+}
+.headerlogotext {
+  /* margin-left: 1rem; */
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-family: var(--txtfont);
+}
+.headerrightsection {
+  
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  /* background-color: pink; */
+  width: 3rem;
+  height: 4rem;
+  gap:2.5rem;
+  right: 0rem;
+  margin-left: auto;
+}
+.headernav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.logoutdropdown {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 7rem;
+  height: 3rem;
+  background-color: var(--bglight);
+  top: 4rem;
+  right: 0rem;
+  cursor: pointer;
+  /* border-bottom-left-radius: 0.5rem; */
+  border-bottom: 1px solid #e0e0e0;
+  border-left: 1px solid #e0e0e0;
+  border-top: 1px solid #e0e0e0;
+  
+}
+.logoutdropdown:hover {
+  opacity: 0.9;
+
+}
+.logoutdropdowntxt {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 400;
+  font-family: var(--txtfont);
+  /* width: 60%; */
+  /* height: 70%; */
+  margin: 0px;
+  border-radius: 0.2rem;
+  margin-left: 0.5rem;
+}
+.headernav::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, #2196f3 0%, #21cbf3 100%);
+  transition: left 0.3s cubic-bezier(0.4,0,0.2,1), width 0.3s cubic-bezier(0.4,0,0.2,1);
+  transform: translateX(-50%);
+}
+.settingsicon {
+  /* opacity: 0.5; */
+}
+.settingsicon:hover {
+  cursor: pointer;
+}
+.headernav:hover {
+  cursor: pointer;
+}
+.headernav:hover::after {
+  left: 50%;
+  width: 100%;
+  transform: translateX(-50%);
+}
+.headernavtxt {
+  font-size: 1.10rem;
+  font-weight: 500;
+  font-family: var(--txtfont);
+  color:rgb(62, 62, 62);
+  margin-left: 0.5rem;  
+}
+.header2 {
 	margin-bottom: 28px;
 }
 
@@ -107,6 +220,17 @@
 }
 .toolbarButton {
   background-color: black;
+  padding: 5px 5px 5px 5px;
+  cursor: pointer;
+  color: white;
+  border: none;
+  width: 100px;
+  height: 30px;
+  font-size: 12px;
+}
+.toolbarButtonActive {
+  background-color: black;
+  opacity: 0.5;
   padding: 5px 5px 5px 5px;
   cursor: pointer;
   color: white;

@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useRef } from "react";
 import styles from "./page.module.css";
-
+import { useRouter } from "next/navigation";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
-
+import { Settings, LogOut } from "lucide-react";
+import { getAuth,signOut } from 'firebase/auth';
 export default function Home() {
   const fileInputRef = useRef(null);
   useEffect(() => {
@@ -19,7 +20,7 @@ export default function Home() {
 
         const updated = data.map((item) => ({
           ...item,
-          
+
           status: "Published",
         }));
         setEvents(updated);
@@ -30,7 +31,16 @@ export default function Home() {
 
     fetchEvents();
   }, []);
-
+  const router = useRouter();
+  useEffect(() => {
+    const ua = navigator.userAgent;
+    const isMobile = /Android|iPhone|iPad|iPod|Windows Phone/i.test(ua);
+    if (isMobile) {
+      router.replace("/unsupported");
+    } else {
+      router.push("/login");
+    }
+  }, [router]);
   const blankForm = {
     title: "",
     time: "",
@@ -164,168 +174,181 @@ export default function Home() {
   };
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <p className={styles.smallHeading}>IndUS Admin Portal</p>
-          <h1>Event Content Management</h1>
-          <p className={styles.subtitle}>
-            View, add, edit, and delete events from the IndUS website.
-          </p>
-        </div>
-      </header>
+    <div>
+      <Header />
 
-      <section className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2>{editingId ? "Edit Event" : "Add Event"}</h2>
-          <p>Use the form to create new events or update an existing event.</p>
-        </div>
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.formGrid}>
-            <label className={styles.formField}>
-              <span>Title</span>
-              <input
-                className={styles.input}
-                name="title"
-                value={form.title}
-                onChange={handleChange}
-                placeholder="Event title"
-              />
-            </label>
-            <label className={styles.formField}>
-              <span>Thumbnail</span>
-              <input
-                className={styles.input}
-                ref={fileInputRef}
-                type="file"
-                name="image"
-                accept="image/*"
-                onChange={handleFileChange}
-              />
-            </label>
+      <div className={styles.page}>
+        <header className={styles.header2}>
+          <div>
+            <p className={styles.smallHeading}>IndUS Admin Portal</p>
+            <h1>Event Content Management</h1>
+            <p className={styles.subtitle}>
+              View, add, edit, and delete events from the IndUS website.
+            </p>
+          </div>
+        </header>
 
-            <label className={styles.formField}>
-              <span>Date</span>
-              <input
-                className={styles.input}
-                type="date"
-                name="date"
-                value={form.date}
-                onChange={handleChange}
-              />
-            </label>
-            <label className={styles.formField}>
-              <span>Time</span>
-              <input
-                className={styles.input}
-                type="time"
-                name="time"
-                value={form.time}
-                onChange={handleChange}
-              />
-            </label>
+        <section className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2>{editingId ? "Edit Event" : "Add Event"}</h2>
+            <p>
+              Use the form to create new events or update an existing event.
+            </p>
+          </div>
+          <form className={styles.form} onSubmit={handleSubmit}>
+            <div className={styles.formGrid}>
+              <label className={styles.formField}>
+                <span>Title</span>
+                <input
+                  className={styles.input}
+                  name="title"
+                  value={form.title}
+                  onChange={handleChange}
+                  placeholder="Event title"
+                />
+              </label>
+              <label className={styles.formField}>
+                <span>Thumbnail</span>
+                <input
+                  className={styles.input}
+                  ref={fileInputRef}
+                  type="file"
+                  name="image"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </label>
 
-            <label className={styles.formField}>
-              <span>Content</span>
-              <EventEditor
-                value={form.content}
-                onChange={(html) =>
-                  setForm((prev) => ({ ...prev, content: html }))
-                }
-              />
-            </label>
+              <label className={styles.formField}>
+                <span>Date</span>
+                <input
+                  className={styles.input}
+                  type="date"
+                  name="date"
+                  value={form.date}
+                  onChange={handleChange}
+                />
+              </label>
+              <label className={styles.formField}>
+                <span>Time</span>
+                <input
+                  className={styles.input}
+                  type="time"
+                  name="time"
+                  value={form.time}
+                  onChange={handleChange}
+                />
+              </label>
 
-            <label className={styles.formField}>
-              <span>Status</span>
-              <select
-                className={styles.input}
-                name="status"
-                value={form.status}
-                onChange={handleChange}
-              >
-                <option>Unpublished</option>
-                <option>Published</option>
-                <option>Past Event</option>
-              </select>
-            </label>
+              <label className={styles.formField}>
+                <span>Content</span>
+                <EventEditor
+                  value={form.content}
+                  onChange={(html) =>
+                    setForm((prev) => ({ ...prev, content: html }))
+                  }
+                />
+              </label>
+
+              <label className={styles.formField}>
+                <span>Status</span>
+                <select
+                  className={styles.input}
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                >
+                  <option>Unpublished</option>
+                  <option>Published</option>
+                  <option>Past Event</option>
+                </select>
+              </label>
+            </div>
+
+            <div className={styles.formActions}>
+              <button type="submit" className={styles.primaryButton}>
+                {editingId ? "Save Changes" : "Add Event"}
+              </button>
+              {editingId && (
+                <button
+                  type="button"
+                  className={styles.secondaryButton}
+                  onClick={resetForm}
+                >
+                  Cancel Edit
+                </button>
+              )}
+            </div>
+          </form>
+        </section>
+
+        <section className={styles.tableSection}>
+          <div className={styles.tableHeader}>
+            <h2>Events</h2>
+            <p>Manage current IndUS events.</p>
           </div>
 
-          <div className={styles.formActions}>
-            <button type="submit" className={styles.primaryButton}>
-              {editingId ? "Save Changes" : "Add Event"}
-            </button>
-            {editingId && (
-              <button
-                type="button"
-                className={styles.secondaryButton}
-                onClick={resetForm}
-              >
-                Cancel Edit
-              </button>
+          <div className={styles.tableWrapper}>
+            {events.length === 0 ? (
+              <p className={styles.emptyState}>
+                No events available. Add an event to get started.
+              </p>
+            ) : (
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {events.map((eventItem) => (
+                    <tr key={eventItem.id}>
+                      <td>{eventItem.title}</td>
+                      <td>
+                        {new Intl.DateTimeFormat("en-US", {
+                          timeZone: "UTC",
+                        }).format(new Date(eventItem.date))}
+                      </td>
+                      <td>{eventItem.status}</td>
+                      <td className={styles.actionsCell}>
+                        <button
+                          type="button"
+                          className={styles.editButton}
+                          onClick={() => handleEdit(eventItem)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.deleteButton}
+                          onClick={() => handleDelete(eventItem.id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
           </div>
-        </form>
-      </section>
-
-      <section className={styles.tableSection}>
-        <div className={styles.tableHeader}>
-          <h2>Events</h2>
-          <p>Manage current IndUS events.</p>
-        </div>
-
-        <div className={styles.tableWrapper}>
-          {events.length === 0 ? (
-            <p className={styles.emptyState}>
-              No events available. Add an event to get started.
-            </p>
-          ) : (
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {events.map((eventItem) => (
-                  <tr key={eventItem.id}>
-                    <td>{eventItem.title}</td>
-                    <td>
-                      {new Intl.DateTimeFormat("en-US", {
-                        timeZone: "UTC",
-                      }).format(new Date(eventItem.date))}
-                    </td>
-                    <td>{eventItem.status}</td>
-                    <td className={styles.actionsCell}>
-                      <button
-                        type="button"
-                        className={styles.editButton}
-                        onClick={() => handleEdit(eventItem)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.deleteButton}
-                        onClick={() => handleDelete(eventItem.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 }
 
 function EventEditor({ value, onChange }) {
+  const [editorStates,setEditorStates] = useState({
+    isBold: false,
+    isItalic: false,
+    isUnderline: false,
+    isBulletList: false,
+    isOrderedList: false,
+  });
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -366,45 +389,80 @@ function EventEditor({ value, onChange }) {
           flexWrap: "wrap",
         }}
       >
-        <button
+        {editorStates.isBold && <button
           type="button"
           className={styles.toolbarButton}
           onClick={() => editor.chain().focus().toggleBold().run()}
         >
           Bold
-        </button>
-
-        <button
+        </button>}
+        {!editorStates.isBold && <button
+          type="button"
+          className={styles.toolbarButtonActive}
+          onClick={() => editor.chain().focus().toggleBold().run()}
+        >
+          Bold
+        </button>}
+        
+        {editorStates.isItalic && <button
           type="button"
           className={styles.toolbarButton}
           onClick={() => editor.chain().focus().toggleItalic().run()}
         >
           Italic
-        </button>
-
-        <button
+        </button>}
+        {!editorStates.isItalic && <button
+          type="button"
+          className={styles.toolbarButtonActive}
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+        >
+          Italic
+        </button>}
+        
+        {editorStates.isUnderline && <button
           type="button"
           className={styles.toolbarButton}
           onClick={() => editor.chain().focus().toggleUnderline().run()}
         >
           Underline
-        </button>
-
-        <button
+        </button>}
+        {!editorStates.isUnderline && <button
+          type="button"
+          className={styles.toolbarButtonActive}
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+        >
+          Underline
+        </button>}
+        
+        {editorStates.isBulletList && <button
           type="button"
           className={styles.toolbarButton}
           onClick={() => editor.chain().focus().toggleBulletList().run()}
         >
           Bullet List
-        </button>
-
-        <button
+        </button>}
+        {!editorStates.isBulletList && <button
+          type="button"
+          className={styles.toolbarButtonActive}
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+        >
+          Bullet List
+        </button>}
+        
+        {editorStates.isOrderedList && <button
           type="button"
           className={styles.toolbarButton}
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
         >
           Numbered List
-        </button>
+        </button>}
+        {!editorStates.isOrderedList && <button
+          type="button"
+          className={styles.toolbarButtonActive}
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        >
+          Numbered List
+        </button>}
         <button
           type="button"
           className={styles.toolbarButton}
@@ -455,4 +513,38 @@ function EventEditor({ value, onChange }) {
       <EditorContent className={styles.editor} editor={editor} />
     </div>
   );
+}
+function Header() {
+  const [logoutDropdown,setLogoutDropdown] = useState(false);
+  const router = useRouter();
+  
+  const handleLogoutDropdown = () => {
+    setLogoutDropdown(!logoutDropdown);
+  }
+  const handleLogout = () => {
+    const auth = getAuth();
+    signOut(auth)
+      .then(() => {
+        router.push('/login')
+      })
+  }
+  return (
+    <div className={[styles.header]}>
+      <img className={styles.headerlogo} src="/header/logo.png" />
+      <div className = {[styles.headerrightsection]}>
+        <HeaderNav onClick = {() => {handleLogoutDropdown()}} className = {styles.headernav} txt = {'Settings'}/>
+      </div>
+      {logoutDropdown &&
+        <div onClick = {() => {handleLogout()}} className = {styles.logoutdropdown}>
+          <LogOut strokeWidth={1.5} width={20}/>
+          <p className = {styles.logoutdropdowntxt}>Sign Out</p>
+        </div>
+      }
+    </div>
+  );
+}
+function HeaderNav({txt, onClick, className}) {
+  if (txt === 'Settings') {
+    return <Settings strokeWidth={1.5} color='rgba(226, 226, 226, 1)'className = {styles.settingsicon}  onClick={onClick}/>;
+  }
 }
